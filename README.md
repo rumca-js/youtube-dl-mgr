@@ -13,7 +13,7 @@ put youtube links in a text file and call script python3 youtube-dl-mgr -f myfil
 ```
 usage: youtube-dl-mgr.py [-h] [-f FILENAME] [-o OUTPUT]
 
-Process some integers.
+Download manager for downloading music from youtube. Please do also buy original copies of the music.
 
 optional arguments:
   -h, --help            show this help message and exit
