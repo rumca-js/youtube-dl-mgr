@@ -1,3 +1,13 @@
+"""
+@author pzielinski
+@description:
+
+prerequisites:
+ - ffmpeg
+ - youtube-dl
+ - id3v2
+ 
+"""
 import argparse
 import os
 import sys
@@ -34,6 +44,14 @@ class YoutubeDownloader(object):
             if wh1 > 0:
                 return line[wh1+13:]
 
+    @staticmethod
+    def validate():
+        try:
+            proc = subprocess.run(['youtube-dl'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except:
+            return False
+        return True
+
 
 class FFmpeg(object):
     def __init__(self, name):
@@ -45,11 +63,19 @@ class FFmpeg(object):
         if wh1 > 0:
             outname=outname[:wh1]+".mp3"
 
-        data = subprocess.run(['ffmpeg', '-i', self.name, '-vn', outname], stdout=subprocess.PIPE)
+        data = subprocess.run(['ffmpeg', '-i', self.name, '-vn', outname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         os.remove(self.name)
 
         return outname
+
+    @staticmethod
+    def validate():
+        try:
+            proc = subprocess.run(['ffmpeg'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except:
+            return False
+        return True
 
 
 class Id3(object):
@@ -72,15 +98,22 @@ class Id3(object):
             self.artist = self.name[:wh]
             self.song = self.name[wh + 2 :]
 
-
     def tag(self):
         subprocess.run(['id3v2', '-t', self.song, '-a', self.artist, self.fullname])
+
+    @staticmethod
+    def validate():
+        try:
+            proc = subprocess.run(['id3v2'], stdout=subprocess.PIPE)
+        except:
+            return False
+        return True
 
 
 class CommandLine(object):
 
     def __init__(self):
-        self.parser = argparse.ArgumentParser(description='Process some integers.')
+        self.parser = argparse.ArgumentParser(description='Download manager for downloading music from youtube. Please do also buy original copies of the music.')
         self.parser.add_argument('-f', '--filename', dest='filename', default='list.txt',
                             help='File name with download list')
         self.parser.add_argument('-o', '--output', dest='output', default='.',
@@ -97,6 +130,18 @@ class CommandLine(object):
             print("Dir name does not exist {0}".format(self.args.output))
             sys.exit(1)
 
+        if not YoutubeDownloader.validate():
+            print("youtubut-dl is not present in your system");
+            sys.exit(2)
+
+        if not FFmpeg.validate():
+            print("ffmpeg is not present in your system");
+            sys.exit(2)
+
+        if not Id3.validate():
+            print("id3v2 is not present in your system");
+            sys.exit(2)
+ 
 
 class MainProgram(object):
 
