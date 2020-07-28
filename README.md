@@ -9,10 +9,15 @@ Comes in a bundle of bash script and python script.
  - id3v2
 
 # installation
-run with root previliges (like with sudo):
+run with root previliges (like with sudo, requires chmod):
 ```
 qyoum.sh install
 ```
+
+Define environment variable YOUTUBE_LINK_FILE.
+For example:
+```
+export YOUTUBE_LINK_FILE=list.txt.
 
 If you do not have youtube-dl installed, then simply run (with root priviliges):
 ```
@@ -20,7 +25,7 @@ update_youtube_dl.sh
 ```
 
 # How-To
-call qyoum.sh in a directory with youtube link as an argument. It adds a link to query for the download.
+call qyoum.sh in a directory with youtube link as an argument. It adds a link to query for the download. It is added to the file specified by YOUTUBE_LINK_VARIABLE file.
 When all links have been added run
 ```
 qyoum.sh run
