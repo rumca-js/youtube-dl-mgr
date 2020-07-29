@@ -14,10 +14,10 @@ run with root previliges (like with sudo, requires chmod):
 qyoum.sh install
 ```
 
-Define environment variable YOUTUBE_LINK_FILE.
+Define environment variable YOUTUBE_LIST_FILE, for example in .bashrc.
 For example:
 ```
-export YOUTUBE_LINK_FILE=list.txt.
+export YOUTUBE_LIST_FILE=list.txt.
 
 If you do not have youtube-dl installed, then simply run (with root priviliges):
 ```
@@ -25,8 +25,11 @@ update_youtube_dl.sh
 ```
 
 # How-To
-call qyoum.sh in a directory with youtube link as an argument. It adds a link to query for the download. It is added to the file specified by YOUTUBE_LINK_VARIABLE file.
-When all links have been added run
+call qyoum.sh with link as an argument to queue the file for download.
+```
+qyoum.sh http://youtubelink
+```
+call qyoum.sh run to download.
 ```
 qyoum.sh run
 ```
@@ -36,13 +39,13 @@ To clear the download query file run
 qyoum.sh clear
 ```
 
-You may want to make an alias for the script, like
+You may want to make an alias for the script. This might be done in .bash_aliases file.
 ```
-alias ym='qyoum.sh'
+alias qy='qyoum.sh'
 ```
  
 # youtube-dl-mgr.py details
-put youtube links in a text file and call script python3 youtube-dl-mgr -f myfile.txt. The program automatically obtains music files from these links, tries to find '-' character to identify the author and tags the file
+These details are not necessary for the user experience. The script puts youtube links in a text file and call script python3 youtube-dl-mgr -f myfile.txt. The program automatically obtains music files from these links, tries to find '-' character to identify the author and tags the file
 
 
 ```
