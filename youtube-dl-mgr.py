@@ -37,6 +37,7 @@ class YoutubeDownloader(object):
         print("downloading: "+self.link.name)
         proc = subprocess.run(['youtube-dl', '-f','bestaudio[ext=m4a]', self.link.name], stdout=subprocess.PIPE)
         out = proc.stdout.decode("utf-8")
+        print(out)
         sp = out.split("\n")
         for line in sp:
             print(line)
@@ -63,7 +64,7 @@ class FFmpeg(object):
         if wh1 > 0:
             outname=outname[:wh1]+".mp3"
 
-        data = subprocess.run(['ffmpeg', '-i', self.name, '-vn', outname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        data = subprocess.run(['ffmpeg', '-y', '-i', self.name, '-vn', outname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         os.remove(self.name)
 
@@ -78,6 +79,13 @@ class FFmpeg(object):
         return True
 
 
+def string_find_first_of(akey):
+    if akey == -1:
+        return 1000
+    else:
+        return akey
+
+
 class Id3(object):
     def __init__(self, name):
         self.fullname = name
@@ -88,18 +96,19 @@ class Id3(object):
 
         wh1 = self.name.find("-")
         wh2 = self.name.find("–")
-        if wh1 > 0 or wh2 > 0:
-            if wh1 == -1:
-                wh = wh2
-            elif wh2 == -1:
-                wh = wh1
-            else:
-                wh = min(wh1, wh2)
-            self.artist = self.name[:wh]
-            self.song = self.name[wh + 2 :]
+        wh3 = self.name.find(':')
+
+        table = [wh1, wh2, wh3]
+        value = min(table, key=string_find_first_of)
+
+        if value != -1:
+            self.artist = self.name[:value-1]
+            self.song = self.name[value + 2 :]
 
     def tag(self):
-        subprocess.run(['id3v2', '-t', self.song, '-a', self.artist, self.fullname])
+        self.album = self.artist
+        print("Tagging Song:'{0}' Artist:'{1}' Album:'{2}'".format(self.song, self.artist, self.album))
+        subprocess.run(['id3v2', '-t', self.song, '-a', self.artist, '-A', self.album, self.fullname])
 
     @staticmethod
     def validate():
