@@ -18,6 +18,7 @@ Define environment variable YOUTUBE_LIST_FILE, for example in .bashrc.
 For example:
 ```
 export YOUTUBE_LIST_FILE=list.txt.
+```
 
 If you do not have youtube-dl installed, then simply run (with root priviliges):
 ```
