@@ -1,5 +1,5 @@
 # Overview
-Youtube download manager. Downloads youtube links as music from the specified input file. The files should be separated by newline.
+Youtube music download manager. Downloads youtube links as music from the specified input file. The files should be separated by newline.
 
 Comes in a bundle of bash script and python script.
 
