@@ -12,6 +12,10 @@ import argparse
 import os
 import sys
 import subprocess
+import pathlib
+
+
+YOUTUBE_VARIABLE_NAME = "YOUTUBE_LIST_FILE"
 
 
 class YoutubeLink(object):
@@ -123,14 +127,40 @@ class CommandLine(object):
 
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='Download manager for downloading music from youtube. Please do also buy original copies of the music.')
-        self.parser.add_argument('-f', '--filename', dest='filename', default='list.txt',
+        self.parser.add_argument('-f', '--filename', dest='filename',
                             help='File name with download list')
+        self.parser.add_argument('-r', '--run', action="store_true", dest='run',
+                            help='Run conversion using list file')
+        self.parser.add_argument('-c', '--clear', action="store_true", dest='clear',
+                            help='Clear list file')
+        self.parser.add_argument('-a', '--add', dest='add',
+                            help='File name to add')
         self.parser.add_argument('-o', '--output', dest='output', default='.',
                             help='Output directory')
+        self.parser.add_argument('text', help='Text to add')
 
         self.args = self.parser.parse_args()
 
     def validate(self):
+
+        if self.args.filename is None:
+            if YOUTUBE_VARIABLE_NAME not in os.environ:
+                print("Either -f option has to be specified or '{0}' environment variable has to be set".format(YOUTUBE_VARIABLE_NAME))
+                sys.exit(1)
+            else:
+                self.args.filename = os.environ[YOUTUBE_VARIABLE_NAME]
+
+        if self.args.add is not None:
+            return
+        if self.args.clear is not None:
+            return
+        if self.args.text is not None:
+            return
+
+        if not os.path.isfile(self.args.filename):
+            print("File name does not exist '{0}'".format(self.args.filename))
+            sys.exit(1)
+
         if not os.path.isfile(self.args.filename):
             print("File name does not exist {0}".format(self.args.filename))
             sys.exit(1)
@@ -150,11 +180,40 @@ class CommandLine(object):
         if not Id3.validate():
             print("id3v2 is not present in your system");
             sys.exit(2)
- 
+
 
 class MainProgram(object):
 
     def __init__(self, cmd):
+
+        if cmd.args.clear:
+            os.remove(cmd.args.filename)
+
+        elif cmd.args.add:
+            self.add(cmd, cmd.args.add)
+
+        elif cmd.args.text:
+            self.add(cmd, cmd.args.text)
+
+        elif cmd.args.run:
+            self.process(cmd)
+
+    def add(self, cmd, text):
+        data = ""
+
+        if os.path.isfile(cmd.args.filename):
+            with open(cmd.args.filename, 'r') as fh:
+                data = fh.read()
+
+        if data == "":
+            toadd = text
+        else:
+            toadd = data + "\n" + text
+
+        with open(cmd.args.filename, 'w') as fh:
+            fh.write(toadd)
+
+    def process(self, cmd):
         with open(cmd.args.filename) as fh:
             data = fh.read()
         
