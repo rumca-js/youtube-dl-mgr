@@ -1,7 +1,8 @@
 # Overview
+
 Youtube music download manager. Downloads youtube links as music from the specified input file. The files should be separated by newline.
 
-Comes in a bundle of bash script and python script.
+Comes in a bundle of bash script and python script. The bash script is handy to install & update.
 
 # prerequisites
  - youtube-dl
@@ -11,8 +12,15 @@ Comes in a bundle of bash script and python script.
 # installation
 run with root previliges (like with sudo, requires chmod):
 ```
-qyoum.sh install
+install.sh install
 ```
+
+If you do not have youtube-dl installed, then simply run (with root priviliges):
+```
+install.sh update
+```
+
+The command also updates youtube-dl if necessary
 
 Define environment variable YOUTUBE_LIST_FILE, for example in .bashrc.
 For example:
@@ -20,44 +28,23 @@ For example:
 export YOUTUBE_LIST_FILE=list.txt.
 ```
 
-If you do not have youtube-dl installed, then simply run (with root priviliges):
+# How-To
+
+To add link to download queue. Multiple entries can be added.
 ```
-update_youtube_dl.sh
+python youtube-dl-mgr.py http://youtubelink
 ```
 
-# How-To
-call qyoum.sh with link as an argument to queue the file for download.
 ```
-qyoum.sh http://youtubelink
-```
-call qyoum.sh run to download.
-```
-qyoum.sh run
+python youtube-dl-mgr.py -r
 ```
 
 To clear the download query file run
 ```
-qyoum.sh clear
+python youtube-dl-mgr.py -c
 ```
 
 You may want to make an alias for the script. This might be done in .bash_aliases file.
 ```
-alias qy='qyoum.sh'
-```
- 
-# youtube-dl-mgr.py details
-These details are not necessary for the user experience. The script puts youtube links in a text file and call script python3 youtube-dl-mgr -f myfile.txt. The program automatically obtains music files from these links, tries to find '-' character to identify the author and tags the file
-
-
-```
-usage: youtube-dl-mgr.py [-h] [-f FILENAME] [-o OUTPUT]
-
-Download manager for downloading music from youtube. Please do also buy original copies of the music.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -f FILENAME, --filename FILENAME
-                        File name with download list
-  -o OUTPUT, --output OUTPUT
-                        Output directory
+alias qy='python3 youtube-dl-mgr.py'
 ```
