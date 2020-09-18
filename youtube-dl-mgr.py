@@ -137,7 +137,7 @@ class CommandLine(object):
                             help='File name to add')
         self.parser.add_argument('-o', '--output', dest='output', default='.',
                             help='Output directory')
-        self.parser.add_argument('text', help='Text to add')
+        self.parser.add_argument('link', nargs='?', default="", help='YouTube link to add')
 
         self.args = self.parser.parse_args()
 
@@ -154,7 +154,7 @@ class CommandLine(object):
             return
         if self.args.clear is not None:
             return
-        if self.args.text is not None:
+        if self.args.link is not None:
             return
 
         if not os.path.isfile(self.args.filename):
@@ -192,8 +192,8 @@ class MainProgram(object):
         elif cmd.args.add:
             self.add(cmd, cmd.args.add)
 
-        elif cmd.args.text:
-            self.add(cmd, cmd.args.text)
+        elif cmd.args.link:
+            self.add(cmd, cmd.args.link)
 
         elif cmd.args.run:
             self.process(cmd)
