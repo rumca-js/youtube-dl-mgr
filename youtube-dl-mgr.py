@@ -155,7 +155,7 @@ class Vlc(object):
         self.name = name
 
     def run(self):
-        data = subprocess.run(['vlc', self.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        data = subprocess.run(['vlc',self.name, 'vlc://quit'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     @staticmethod
     def validate():
