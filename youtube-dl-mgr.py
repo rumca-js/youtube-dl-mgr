@@ -37,7 +37,7 @@ class YoutubeDownloader(object):
     def __init__(self, link):
         self.link = link
 
-    def download(self):
+    def download(self, suggested_name=None):
         print("downloading: "+self.link.name)
         proc = subprocess.run(['youtube-dl', '-f','bestaudio[ext=m4a]', self.link.name], stdout=subprocess.PIPE)
 
@@ -61,9 +61,14 @@ class YoutubeDownloader(object):
                 if item == simple_file:
                     real_file = files[key]
 
-        os.rename( real_file, simple_file)
+        if suggested_name:
+            dst_name = suggested_name
+        else:
+            dst_name = simple_file
 
-        return simple_file
+        os.rename( real_file, dst_name)
+
+        return dst_name
 
     def get_file_name(self, out):
         sp = out.split("\n")
@@ -245,6 +250,9 @@ class ConfigurationEntry(object):
         data = "Author:{0}\nAlbum:{1}\nSong:{2}\nLink:{3}".format(self.author, self.album, self.song, self.link)
         return data
 
+    def get_file_name(self):
+        return "{0} - {1} - {2}.m4a".format(self.author, self.album, self.song)
+
 
 class Configuration(object):
 
@@ -328,7 +336,7 @@ class MainProgram(object):
                 print( str(entry))
 
                 mgr = YoutubeDownloader(link)
-                fname = mgr.download()
+                fname = mgr.download(entry.get_file_name() )
 
                 if fname:
                     vlc = Vlc(fname)
