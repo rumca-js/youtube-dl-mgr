@@ -40,8 +40,35 @@ class YoutubeDownloader(object):
     def download(self):
         print("downloading: "+self.link.name)
         proc = subprocess.run(['youtube-dl', '-f','bestaudio[ext=m4a]', self.link.name], stdout=subprocess.PIPE)
-        out = proc.stdout.decode("utf-8")
-        print(out)
+
+        simple_text = proc.stdout.decode("ascii", errors="ignore")
+
+        try:
+            out = proc.stdout.decode("utf-8")
+            print(out)
+        except Exception as E:
+            out = proc.stdout.decode("cp1250")
+            print(out)
+
+        simple_file = self.get_file_name(simple_text)
+        real_file = self.get_file_name(out)
+
+        if not os.path.isfile(real_file):
+            files = os.listdir()
+
+            simple_files = [ x.encode("ascii",errors="ignore").decode() for x in files]
+            for key, item in enumerate(simple_files):
+                if item == simple_file:
+                    real_file = files[key]
+
+        print(real_file)
+        print(simple_file)
+
+        os.rename( real_file, simple_file)
+
+        return simple_file
+
+    def get_file_name(self, out):
         sp = out.split("\n")
         for line in sp:
             print(line)
@@ -121,6 +148,22 @@ class Id3(object):
         except:
             return False
         return True
+    
+
+class Vlc(object):
+    def __init__(self, name):
+        self.name = name
+
+    def run(self):
+        data = subprocess.run(['vlc', self.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    @staticmethod
+    def validate():
+        try:
+            proc = subprocess.run(['vlc'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except:
+            return False
+        return True
 
 
 class CommandLine(object):
@@ -135,6 +178,8 @@ class CommandLine(object):
                             help='Clear list file')
         self.parser.add_argument('-a', '--add', dest='add',
                             help='File name to add')
+        self.parser.add_argument('-p', '--play', dest='play', action="store_true",
+                            help='Plays list')
         self.parser.add_argument('-o', '--output', dest='output', default='.',
                             help='Output directory')
         self.parser.add_argument('link', nargs='?', default="", help='YouTube link to add')
@@ -198,6 +243,9 @@ class MainProgram(object):
         elif cmd.args.run:
             self.process(cmd)
 
+        elif cmd.args.play:
+            self.play(cmd)
+
     def add(self, cmd, text):
         data = ""
 
@@ -221,14 +269,37 @@ class MainProgram(object):
         for line in sp:
             link = YoutubeLink(line)
             if link.valid:
+
                 mgr = YoutubeDownloader(link)
                 fname = mgr.download()
+
                 if fname:
+                    if not FFmpeg.validate():
+                        continue
+
                     ffmpeg = FFmpeg(fname)
                     out = ffmpeg.convertToMp3()
 
                     id3 = Id3(out)
                     id3.tag()
+
+    def play(self, cmd):
+        with open(cmd.args.filename) as fh:
+            data = fh.read()
+        
+        sp = data.split("\n")
+        for line in sp:
+            link = YoutubeLink(line)
+            if link.valid:
+
+                mgr = YoutubeDownloader(link)
+                fname = mgr.download()
+
+                if fname:
+                    vlc = Vlc(fname)
+                    vlc.run()
+
+                    os.remove(fname)
     
 
 def main():

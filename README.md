@@ -35,11 +35,17 @@ To add link to download queue. Multiple entries can be added.
 python youtube-dl-mgr.py http://youtubelink
 ```
 
+To execute download.
 ```
 python youtube-dl-mgr.py -r
 ```
 
 To clear the download query file run
+```
+python youtube-dl-mgr.py -c
+```
+
+To play the list. The files are downloaded into working directory and removed.
 ```
 python youtube-dl-mgr.py -c
 ```
