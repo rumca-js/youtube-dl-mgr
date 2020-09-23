@@ -1,5 +1,5 @@
 """
-@author pzielinski
+@artist pzielinski
 @description:
 
 prerequisites:
@@ -39,6 +39,7 @@ class YoutubeDownloader(object):
 
     def download(self, suggested_name=None):
         print("downloading: "+self.link.name)
+
         proc = subprocess.run(['youtube-dl', '-f','bestaudio[ext=m4a]', self.link.name], stdout=subprocess.PIPE)
 
         simple_text = proc.stdout.decode("ascii", errors="ignore")
@@ -91,10 +92,9 @@ class FFmpeg(object):
         self.name = name
 
     def convertToMp3(self):
+        print("Converting to mp3...")
+
         outname = self.name.replace(".m4a", ".mp3")
-        wh1 = outname.rfind('-')
-        if wh1 > 0:
-            outname=outname[:wh1]+".mp3"
 
         data = subprocess.run(['ffmpeg', '-y', '-i', self.name, '-vn', outname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -119,28 +119,18 @@ def string_find_first_of(akey):
 
 
 class Id3(object):
-    def __init__(self, name):
-        self.fullname = name
-        self.name = name[:-4]
 
-        self.song = self.name
-        self.artist = self.name
+    def __init__(self, file_name, entry=None):
+        self.file_name = file_name
 
-        wh1 = self.name.find("-")
-        wh2 = self.name.find("–")
-        wh3 = self.name.find(':')
-
-        table = [wh1, wh2, wh3]
-        value = min(table, key=string_find_first_of)
-
-        if value != -1:
-            self.artist = self.name[:value-1]
-            self.song = self.name[value + 2 :]
+        self.song = entry.song
+        self.artist = entry.artist
+        self.album = entry.album
 
     def tag(self):
-        self.album = self.artist
         print("Tagging Song:'{0}' Artist:'{1}' Album:'{2}'".format(self.song, self.artist, self.album))
-        subprocess.run(['id3v2', '-t', self.song, '-a', self.artist, '-A', self.album, self.fullname])
+
+        subprocess.run(['id3v2', '-t', self.song, '-a', self.artist, '-A', self.album, self.file_name])
 
     @staticmethod
     def validate():
@@ -173,7 +163,7 @@ class CommandLine(object):
         self.parser = argparse.ArgumentParser(description='Download manager for downloading music from youtube. Please do also buy original copies of the music.')
         self.parser.add_argument('-f', '--filename', dest='filename',
                             help='File name with download list')
-        self.parser.add_argument('-r', '--run', action="store_true", dest='run',
+        self.parser.add_argument('-d', '--download', action="store_true", dest='download',
                             help='Run conversion using list file')
         self.parser.add_argument('-c', '--clear', action="store_true", dest='clear',
                             help='Clear list file')
@@ -232,7 +222,7 @@ class ConfigurationEntry(object):
 
     def __init__(self, line):
         self.link = line
-        self.author = ""
+        self.artist = ""
         self.album = ""
         self.song = ""
 
@@ -240,18 +230,21 @@ class ConfigurationEntry(object):
             values = line.split(";")
             self.link = values[0]
             if len(values) > 1:
-                self.author = values[1]
+                self.artist = values[1]
             if len(values) > 2:
                 self.album = values[2]
             if len(values) > 3:
                 self.song = values[3]
 
     def __str__(self):
-        data = "Author:{0}\nAlbum:{1}\nSong:{2}\nLink:{3}".format(self.author, self.album, self.song, self.link)
+        data = "Author:{0}\nAlbum:{1}\nSong:{2}\nLink:{3}".format(self.artist, self.album, self.song, self.link)
         return data
 
     def get_file_name(self):
-        return "{0} - {1} - {2}.m4a".format(self.author, self.album, self.song)
+        return "{0} - {1} - {2}.m4a".format(self.artist, self.album, self.song)
+
+    def get_dir_name(self):
+        return "{0}/{1}".format(self.artist, self.album)
 
 
 class Configuration(object):
@@ -283,8 +276,8 @@ class MainProgram(object):
         elif cmd.args.link:
             self.add(cmd, cmd.args.link)
 
-        elif cmd.args.run:
-            self.process(cmd)
+        elif cmd.args.download:
+            self.download(cmd)
 
         elif cmd.args.play:
             self.play(cmd)
@@ -304,27 +297,33 @@ class MainProgram(object):
         with open(cmd.args.filename, 'w') as fh:
             fh.write(toadd)
 
-    def process(self, cmd):
+    def download(self, cmd):
 
         config = Configuration(cmd.args.filename)
         for entry in config.get_entries():
-            print(entry)
 
             link = YoutubeLink(entry.link)
             if link.valid:
+                print(entry)
 
                 mgr = YoutubeDownloader(link)
-                fname = mgr.download()
+                download_name = mgr.download(entry.get_file_name() )
 
-                if fname:
+                if download_name:
                     if not FFmpeg.validate():
                         continue
 
-                    ffmpeg = FFmpeg(fname)
-                    out = ffmpeg.convertToMp3()
+                    ffmpeg = FFmpeg(download_name)
+                    mp3_name = ffmpeg.convertToMp3()
 
-                    id3 = Id3(out)
+                    id3 = Id3(mp3_name, entry)
                     id3.tag()
+
+                    if not os.path.isdir(entry.get_dir_name()):
+                        os.makedirs(entry.get_dir_name())
+
+                    dst_name = os.path.join(entry.get_dir_name(), mp3_name)
+                    os.rename(mp3_name, dst_name)
 
     def play(self, cmd):
 
@@ -336,13 +335,13 @@ class MainProgram(object):
                 print( str(entry))
 
                 mgr = YoutubeDownloader(link)
-                fname = mgr.download(entry.get_file_name() )
+                download_name = mgr.download(entry.get_file_name() )
 
-                if fname:
-                    vlc = Vlc(fname)
+                if download_name:
+                    vlc = Vlc(download_name)
                     vlc.run()
 
-                    os.remove(fname)
+                    os.remove(download_name)
                     print()
     
 
