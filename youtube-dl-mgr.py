@@ -45,10 +45,10 @@ class YoutubeDownloader(object):
 
         try:
             out = proc.stdout.decode("utf-8")
-            print(out)
+            #print(out)
         except Exception as E:
             out = proc.stdout.decode("cp1250")
-            print(out)
+            #print(out)
 
         simple_file = self.get_file_name(simple_text)
         real_file = self.get_file_name(out)
@@ -61,9 +61,6 @@ class YoutubeDownloader(object):
                 if item == simple_file:
                     real_file = files[key]
 
-        print(real_file)
-        print(simple_file)
-
         os.rename( real_file, simple_file)
 
         return simple_file
@@ -71,7 +68,6 @@ class YoutubeDownloader(object):
     def get_file_name(self, out):
         sp = out.split("\n")
         for line in sp:
-            print(line)
             wh1 = line.find("Destination")
             if wh1 > 0:
                 return line[wh1+13:]
@@ -227,6 +223,45 @@ class CommandLine(object):
             sys.exit(2)
 
 
+class ConfigurationEntry(object):
+
+    def __init__(self, line):
+        self.link = line
+        self.author = ""
+        self.album = ""
+        self.song = ""
+
+        if line.find(";") >= 0:
+            values = line.split(";")
+            self.link = values[0]
+            if len(values) > 1:
+                self.author = values[1]
+            if len(values) > 2:
+                self.album = values[2]
+            if len(values) > 3:
+                self.song = values[3]
+
+    def __str__(self):
+        data = "Author:{0}\nAlbum:{1}\nSong:{2}\nLink:{3}".format(self.author, self.album, self.song, self.link)
+        return data
+
+
+class Configuration(object):
+
+    def __init__(self, file_name):
+        with open(file_name) as fh:
+            data = fh.read()
+
+        self.entries = []
+        
+        self.sp = data.split("\n")
+        for line in self.sp:
+            self.entries.append(ConfigurationEntry(line))
+
+    def get_entries(self):
+        return self.entries
+
+
 class MainProgram(object):
 
     def __init__(self, cmd):
@@ -262,12 +297,12 @@ class MainProgram(object):
             fh.write(toadd)
 
     def process(self, cmd):
-        with open(cmd.args.filename) as fh:
-            data = fh.read()
-        
-        sp = data.split("\n")
-        for line in sp:
-            link = YoutubeLink(line)
+
+        config = Configuration(cmd.args.filename)
+        for entry in config.get_entries():
+            print(entry)
+
+            link = YoutubeLink(entry.link)
             if link.valid:
 
                 mgr = YoutubeDownloader(link)
@@ -284,13 +319,13 @@ class MainProgram(object):
                     id3.tag()
 
     def play(self, cmd):
-        with open(cmd.args.filename) as fh:
-            data = fh.read()
-        
-        sp = data.split("\n")
-        for line in sp:
-            link = YoutubeLink(line)
+
+        config = Configuration(cmd.args.filename)
+        for entry in config.get_entries():
+
+            link = YoutubeLink(entry.link)
             if link.valid:
+                print( str(entry))
 
                 mgr = YoutubeDownloader(link)
                 fname = mgr.download()
@@ -300,6 +335,7 @@ class MainProgram(object):
                     vlc.run()
 
                     os.remove(fname)
+                    print()
     
 
 def main():
