@@ -45,9 +45,10 @@ To clear the download query file run
 python youtube-dl-mgr.py -c
 ```
 
-To play the list. The files are downloaded into working directory and removed.
+To play the list. The files are downloaded into working directory and removed after playback.
+VLC is used for playback. It needs to be in the PATH.
 ```
-python youtube-dl-mgr.py -c
+python youtube-dl-mgr.py -p
 ```
 
 You may want to make an alias for the script. This might be done in .bash_aliases file.
