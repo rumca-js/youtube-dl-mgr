@@ -19,48 +19,80 @@ YOUTUBE_VARIABLE_NAME = "YOUTUBE_LIST_FILE"
 
 
 class YoutubeLink(object):
-    def __init__(self, wholename):
-        if wholename.strip() == "":
+
+    def __init__(self, input_link):
+
+        self.abs_link = input_link
+        self.get_only_link()
+
+        if input_link.strip() == "":
             self.valid = False
         else:
             self.valid = True
 
-        self.wholename = wholename
-        self.name = wholename
-        
-        wh1 = self.wholename.find("&")
+    def get_only_link(self):
+        wh1 = self.abs_link.find("&")
         if wh1 > 0:
-            self.name = self.wholename[:wh1]
+            self.clean_link = self.abs_link[:wh1]
+
+        return self.clean_link
 
 
 class YoutubeDownloader(object):
+
     def __init__(self, link):
         self.link = link
 
-    def download(self, suggested_name=None):
-        print("downloading: "+self.link.name)
+    def run(self)
+        return subprocess.run(['youtube-dl', '-f','bestaudio[ext=m4a]', self.link.name], stdout=subprocess.PIPE)
 
-        proc = subprocess.run(['youtube-dl', '-f','bestaudio[ext=m4a]', self.link.name], stdout=subprocess.PIPE)
-
+    def read_process_ignore(self, proc):
         simple_text = proc.stdout.decode("ascii", errors="ignore")
 
+    def read_process_encoding(self, proc):
         try:
             out = proc.stdout.decode("utf-8")
             #print(out)
         except Exception as E:
             out = proc.stdout.decode("cp1250")
             #print(out)
+        return out
 
-        simple_file = self.get_file_name(simple_text)
-        real_file = self.get_file_name(out)
+    def get_file_items_ignore(self):
+        '''
+        Returns file names without funny characters from encoding
+        Only ASCII.
+        '''
+        files = os.listdir()
 
-        if not os.path.isfile(real_file):
-            files = os.listdir()
+        simple_files = [ x.encode("ascii",errors="ignore").decode() for x in files]
 
-            simple_files = [ x.encode("ascii",errors="ignore").decode() for x in files]
-            for key, item in enumerate(simple_files):
-                if item == simple_file:
-                    real_file = files[key]
+        return simple_files
+
+    def get_os_real_file_name(self, simple_file_name):
+        '''
+        Retrieve name from the OS.
+        ASCII characters will match.
+        '''
+        simple_files = self.get_file_items_ignore()
+
+        for key, item in enumerate(simple_files):
+            if item == simple_file_name:
+                return files[key]
+
+    def download(self, suggested_name=None):
+        print("downloading: "+self.link.name)
+
+        proc = self.run()
+
+        simple_text = self.read_process_ignore(proc)
+        real_text = self.read_process_encoding(proc)
+
+        simple_file = self.get_file_name_from_out(simple_text)
+        real_file = self.get_file_name_from_out(real_text)
+
+        if simple_file != real_file:
+            real_file = self.get_os_real_file_name(simple_file)
 
         if suggested_name:
             dst_name = suggested_name
@@ -71,7 +103,7 @@ class YoutubeDownloader(object):
 
         return dst_name
 
-    def get_file_name(self, out):
+    def get_file_name_from_out(self, out):
         sp = out.split("\n")
         for line in sp:
             wh1 = line.find("Destination")
