@@ -34,20 +34,23 @@ class YoutubeLink(object):
         wh1 = self.abs_link.find("&")
         if wh1 > 0:
             self.clean_link = self.abs_link[:wh1]
+        else:
+            self.clean_link = self.abs_link
 
         return self.clean_link
 
 
 class YoutubeDownloader(object):
 
-    def __init__(self, link):
-        self.link = link
+    def __init__(self, ytlink):
+        self.link = ytlink
 
-    def run(self)
-        return subprocess.run(['youtube-dl', '-f','bestaudio[ext=m4a]', self.link.name], stdout=subprocess.PIPE)
+    def run(self):
+        return subprocess.run(['youtube-dl', '-f','bestaudio[ext=m4a]', self.link.clean_link], stdout=subprocess.PIPE)
 
     def read_process_ignore(self, proc):
         simple_text = proc.stdout.decode("ascii", errors="ignore")
+        return simple_text
 
     def read_process_encoding(self, proc):
         try:
@@ -67,21 +70,22 @@ class YoutubeDownloader(object):
 
         simple_files = [ x.encode("ascii",errors="ignore").decode() for x in files]
 
-        return simple_files
+        return files, simple_files
 
     def get_os_real_file_name(self, simple_file_name):
         '''
         Retrieve name from the OS.
         ASCII characters will match.
         '''
-        simple_files = self.get_file_items_ignore()
+        files, simple_files = self.get_file_items_ignore()
+        print(simple_files)
 
         for key, item in enumerate(simple_files):
             if item == simple_file_name:
                 return files[key]
 
     def download(self, suggested_name=None):
-        print("downloading: "+self.link.name)
+        print("downloading: "+self.link.clean_link)
 
         proc = self.run()
 
@@ -91,8 +95,18 @@ class YoutubeDownloader(object):
         simple_file = self.get_file_name_from_out(simple_text)
         real_file = self.get_file_name_from_out(real_text)
 
-        if simple_file != real_file:
-            real_file = self.get_os_real_file_name(simple_file)
+        print("simpletext")
+        print("'{0}'".format(simple_text))
+        print("'{0}'".format(simple_file))
+        print("real")
+        print("'{0}'".format(real_text))
+        print("'{0}'".format(real_file))
+
+        real_file = self.get_os_real_file_name(simple_file)
+
+        print("real")
+        print("'{0}'".format(real_text))
+        print("'{0}'".format(real_file))
 
         if suggested_name:
             dst_name = suggested_name
@@ -104,11 +118,22 @@ class YoutubeDownloader(object):
         return dst_name
 
     def get_file_name_from_out(self, out):
-        sp = out.split("\n")
-        for line in sp:
-            wh1 = line.find("Destination")
-            if wh1 > 0:
-                return line[wh1+13:]
+        if out.find("has already been downloaded") >= 0:
+            sp = out.split("\n")
+            for line in sp:
+                wh2 = line.find("has already been downloaded")
+                if wh2 > 0:
+                    wh1 = line.find("]")
+
+                    line = line[wh1+2:wh2-1]
+
+                    return line
+        else:
+            sp = out.split("\n")
+            for line in sp:
+                wh1 = line.find("Destination")
+                if wh1 > 0:
+                    return line[wh1+13:]
 
     @staticmethod
     def validate():
@@ -338,7 +363,7 @@ class MainProgram(object):
             if link.valid:
                 print(entry)
 
-                mgr = YoutubeDownloader(link)
+                mgr = YoutubeDownloader(entry.link)
                 download_name = mgr.download(entry.get_file_name() )
 
                 if download_name:
