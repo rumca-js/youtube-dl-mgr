@@ -78,7 +78,6 @@ class YoutubeDownloader(object):
         ASCII characters will match.
         '''
         files, simple_files = self.get_file_items_ignore()
-        print(simple_files)
 
         for key, item in enumerate(simple_files):
             if item == simple_file_name:
