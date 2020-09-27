@@ -362,7 +362,7 @@ class MainProgram(object):
             if link.valid:
                 print(entry)
 
-                mgr = YoutubeDownloader(entry.link)
+                mgr = YoutubeDownloader(link)
                 download_name = mgr.download(entry.get_file_name() )
 
                 if download_name:
