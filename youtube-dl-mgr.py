@@ -18,6 +18,18 @@ import pathlib
 YOUTUBE_VARIABLE_NAME = "YOUTUBE_LIST_FILE"
 
 
+def escape_os_chars(text):
+    text = text.replace("?", "")
+    text = text.replace(":", "")
+    text = text.replace("<", "")
+    text = text.replace(">", "")
+    text = text.replace("/", "")
+    text = text.replace("\\", "")
+    text = text.replace("|", "")
+    text = text.replace("*", "")
+    return text
+
+
 class YoutubeLink(object):
 
     def __init__(self, input_link):
@@ -111,6 +123,8 @@ class YoutubeDownloader(object):
             dst_name = suggested_name
         else:
             dst_name = simple_file
+
+        dst_name = escape_os_chars(dst_name)
 
         os.rename( real_file, dst_name)
 
