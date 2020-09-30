@@ -106,18 +106,7 @@ class YoutubeDownloader(object):
         simple_file = self.get_file_name_from_out(simple_text)
         real_file = self.get_file_name_from_out(real_text)
 
-        print("simpletext")
-        print("'{0}'".format(simple_text))
-        print("'{0}'".format(simple_file))
-        print("real")
-        print("'{0}'".format(real_text))
-        print("'{0}'".format(real_file))
-
         real_file = self.get_os_real_file_name(simple_file)
-
-        print("real")
-        print("'{0}'".format(real_text))
-        print("'{0}'".format(real_file))
 
         if suggested_name:
             dst_name = suggested_name
