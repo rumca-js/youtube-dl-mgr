@@ -30,6 +30,17 @@ def escape_os_chars(text):
     return text
 
 
+def safe_decode(text):
+    try:
+        out = text.decode("utf-8")
+        #print(out)
+    except Exception as E:
+        print(E)
+        out = text.decode("cp1250")
+        #print(out)
+    return out
+
+
 class YoutubeLink(object):
 
     def __init__(self, input_link):
@@ -64,15 +75,6 @@ class YoutubeDownloader(object):
         simple_text = proc.stdout.decode("ascii", errors="ignore")
         return simple_text
 
-    def read_process_encoding(self, proc):
-        try:
-            out = proc.stdout.decode("utf-8")
-            #print(out)
-        except Exception as E:
-            out = proc.stdout.decode("cp1250")
-            #print(out)
-        return out
-
     def get_file_items_ignore(self):
         '''
         Returns file names without funny characters from encoding
@@ -101,7 +103,7 @@ class YoutubeDownloader(object):
         proc = self.run()
 
         simple_text = self.read_process_ignore(proc)
-        real_text = self.read_process_encoding(proc)
+        real_text = safe_decode(proc.stdout)
 
         simple_file = self.get_file_name_from_out(simple_text)
         real_file = self.get_file_name_from_out(real_text)
@@ -309,8 +311,9 @@ class ConfigurationEntry(object):
 class Configuration(object):
 
     def __init__(self, file_name):
-        with open(file_name) as fh:
+        with open(file_name, 'rb') as fh:
             data = fh.read()
+            data = safe_decode(data)
 
         self.entries = []
         
