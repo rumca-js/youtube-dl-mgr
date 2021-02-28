@@ -5,11 +5,14 @@ Youtube music download manager. Downloads youtube links as music from the specif
 Comes in a bundle of bash script and python script. The bash script is handy to install & update.
 
 # prerequisites
- - youtube-dl
+
+ - youtube-dl (which requires python to be in PATH)
  - ffmpeg
  - id3v2
+ - curl for update
 
 # installation
+
 run with root previliges (like with sudo, requires chmod):
 ```
 install.sh install

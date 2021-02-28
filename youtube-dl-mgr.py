@@ -181,17 +181,21 @@ def string_find_first_of(akey):
 
 class Id3(object):
 
-    def __init__(self, file_name, entry=None):
+    def __init__(self, file_name, entry=None, tracknum=None):
         self.file_name = file_name
 
         self.song = entry.song
         self.artist = entry.artist
         self.album = entry.album
+        self.track = tracknum
 
     def tag(self):
         print("Tagging Song:'{0}' Artist:'{1}' Album:'{2}'".format(self.song, self.artist, self.album))
 
-        subprocess.run(['id3v2', '-t', self.song, '-a', self.artist, '-A', self.album, self.file_name])
+        if self.track:
+            subprocess.run(['id3v2', '-t', self.song, '-a', self.artist, '-A', self.album, '-T', str(self.track), self.file_name])
+        else:
+            subprocess.run(['id3v2', '-t', self.song, '-a', self.artist, '-A', self.album, self.file_name])
 
     @staticmethod
     def validate():
@@ -362,7 +366,7 @@ class MainProgram(object):
     def download(self, cmd):
 
         config = Configuration(cmd.args.filename)
-        for entry in config.get_entries():
+        for track, entry in enumerate(config.get_entries(), 1):
 
             link = YoutubeLink(entry.link)
             if link.valid:
@@ -373,18 +377,25 @@ class MainProgram(object):
 
                 if download_name:
                     if not FFmpeg.validate():
+                        print("ffmpeg is not installed, continuing to next file")
+
+                        dst_name = "{0}_{1}".format(track, download_name)
+                        dst_name = os.path.join(entry.get_dir_name(), dst_name)
+                        os.rename(download_name, dst_name)
+
                         continue
 
                     ffmpeg = FFmpeg(download_name)
                     mp3_name = ffmpeg.convertToMp3()
 
-                    id3 = Id3(mp3_name, entry)
+                    id3 = Id3(mp3_name, entry, track)
                     id3.tag()
 
                     if not os.path.isdir(entry.get_dir_name()):
                         os.makedirs(entry.get_dir_name())
 
-                    dst_name = os.path.join(entry.get_dir_name(), mp3_name)
+                    dst_name = "{0}_{1}".format(track, mp3_name)
+                    dst_name = os.path.join(entry.get_dir_name(), dst_name)
                     os.rename(mp3_name, dst_name)
 
     def play(self, cmd):
