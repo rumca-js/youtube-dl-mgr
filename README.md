@@ -53,6 +53,8 @@ To clear the download query file run
 python youtube-dl-mgr.py -c
 ```
 
+After adding songs to the download file please edit it to provide Artist, Album and Song names.
+
 To play the list. The files are downloaded into working directory and removed after playback.
 VLC is used for playback. It needs to be in the PATH.
 ```
