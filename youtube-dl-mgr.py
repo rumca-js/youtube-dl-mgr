@@ -373,13 +373,19 @@ class MainProgram(object):
                 print(entry)
 
                 mgr = YoutubeDownloader(link)
-                download_name = mgr.download(entry.get_file_name() )
+                for index in range(5):
+                    try:
+                        download_name = mgr.download(entry.get_file_name() )
+                        if download_name:
+                            break
+                    except:
+                        None
 
                 if download_name:
                     if not FFmpeg.validate():
                         print("ffmpeg is not installed, continuing to next file")
 
-                        dst_name = "{0}_{1}".format(track, download_name)
+                        dst_name = "{0:02d}_{1}".format(track, download_name)
                         dst_name = os.path.join(entry.get_dir_name(), dst_name)
                         os.rename(download_name, dst_name)
 
@@ -394,7 +400,7 @@ class MainProgram(object):
                     if not os.path.isdir(entry.get_dir_name()):
                         os.makedirs(entry.get_dir_name())
 
-                    dst_name = "{0}_{1}".format(track, mp3_name)
+                    dst_name = "{0:02d}_{1}".format(track, mp3_name)
                     dst_name = os.path.join(entry.get_dir_name(), dst_name)
                     os.rename(mp3_name, dst_name)
 
