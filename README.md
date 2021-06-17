@@ -25,15 +25,9 @@ sudo install.sh update
 
 The command also updates youtube-dl if necessary
 
-Define environment variable YOUTUBE_LIST_FILE, for example in .bashrc.
-For example:
-```
-export YOUTUBE_LIST_FILE=list.txt.
-```
-
 # How-To
 
-To add link to download file:
+To create or add link to download file list.txt:
 ```
 python youtube-dl-mgr.py http://youtubelink
 ```
@@ -41,11 +35,6 @@ python youtube-dl-mgr.py http://youtubelink
 To download links in download file:
 ```
 python youtube-dl-mgr.py -d
-```
-
-The download file can be explicit:
-```
-python youtube-dl-mgr.py -d -f list.txt
 ```
 
 To clear the download query file run
@@ -61,11 +50,28 @@ VLC is used for playback. It needs to be in the PATH.
 python youtube-dl-mgr.py -p
 ```
 
+# Advanced
+
+You do not have to use list.txt file every time. 
+Environment variable YOUTUBE_LIST_FILE controls the name of the download queue file.
+
+For example:
+```
+export YOUTUBE_LIST_FILE=list.txt.
+```
+
+The download file can also be explicit:
+```
+python youtube-dl-mgr.py -d -f list.txt
+```
+
 You may want to make an alias for the script. This might be done in .bash_aliases file.
 ```
 alias qy='python3 youtube-dl-mgr.py'
 ```
+
 After that you can download by simply:
 ```
 qy -d -f list.txt
 ```
+
