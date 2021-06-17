@@ -355,6 +355,8 @@ class MainProgram(object):
             with open(cmd.args.filename, 'r') as fh:
                 data = fh.read()
 
+        text += ";Artist;Album;Song Name"
+
         if data == "":
             toadd = text
         else:
